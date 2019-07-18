@@ -128,6 +128,7 @@ namespace Jahresauswertung
 
                 for (rCnt = 2; rCnt <= rw; rCnt++)
                 {
+                    added = false;
                     if (Convert.ToInt16((oRng.Cells[rCnt, 1] as Excel.Range).Value2) != 0) rang = Convert.ToInt16((oRng.Cells[rCnt, 1] as Excel.Range).Value2); //Bei mehreren gleichen Rängen den Rang von vorher übernehmen
                     nachname = (string)(oRng.Cells[rCnt, nachnameSpalte] as Excel.Range).Value2;
                     vorname = (string)(oRng.Cells[rCnt, vornameSpalte] as Excel.Range).Value2;
@@ -187,7 +188,7 @@ namespace Jahresauswertung
                 for (int i = 0; i < läufe.Count; i++)
                 {
                     bool found = false;
-                    for (int n = 0; i < r.läufe.Count; n++)
+                    for (int n = 0; n < r.läufe.Count; n++)
                     {
                         if (r.läufe[n].name == läufe[i].name)
                         {
@@ -255,7 +256,7 @@ namespace Jahresauswertung
 
             }
             // storing Each row and column value to excel sheet  
-            for (int i = 0; i < dataGridView1.Rows.Count - 1; i++)
+            for (int i = 0; i < dataGridView1.Rows.Count; i++)
             {
                 for (int j = 0; j < dataGridView1.Columns.Count; j++)
                 {
@@ -270,8 +271,8 @@ namespace Jahresauswertung
                     worksheet.Cells[i + 4, j + 1].BorderAround(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium, Excel.XlColorIndex.xlColorIndexAutomatic, Excel.XlColorIndex.xlColorIndexAutomatic);
                 }
             }
-            worksheet.Range[worksheet.Cells[dataGridView1.Rows.Count - 1 + 4, 1], worksheet.Cells[dataGridView1.Rows.Count - 1 + 4, dataGridView1.Columns.Count]].Merge(false);
-            worksheet.Cells[dataGridView1.Rows.Count - 1 + 4, 1] = DateTime.Today.ToString("s");
+            worksheet.Range[worksheet.Cells[dataGridView1.Rows.Count + 4, 1], worksheet.Cells[dataGridView1.Rows.Count + 4, dataGridView1.Columns.Count]].Merge(false);
+            worksheet.Cells[dataGridView1.Rows.Count + 4, 1] = DateTime.Today.ToString("s");
             worksheet.UsedRange.Columns.AutoFit();
 
             // save the application  
