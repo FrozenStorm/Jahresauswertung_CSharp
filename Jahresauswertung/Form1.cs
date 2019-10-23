@@ -44,15 +44,13 @@ namespace Jahresauswertung
 
         private void button2_Click(object sender, EventArgs e)
         {
-            ofd1.InitialDirectory = "C:\\Users\\Daniel Zwygart\\Dropbox\\SEC Renndaten\\2019_Expert";
+            //ofd1.InitialDirectory = "C:\\Users\\Daniel Zwygart\\Dropbox\\SEC Renndaten\\2019_Expert";
+            ofd1.InitialDirectory = Directory.GetCurrentDirectory();
             ofd1.RestoreDirectory = true;
             ofd1.Multiselect = true;
             if (DialogResult.OK == ofd1.ShowDialog())
             {
                 files = ofd1.FileNames;
-                comboBox1.Items.Clear();
-                comboBox1.Items.AddRange(files);
-                comboBox1.SelectedIndex = 0;
             }
 
 
@@ -65,231 +63,255 @@ namespace Jahresauswertung
             läufe.Clear();
             dataGridView1.Rows.Clear();
 
-            /*try
-            {*/
-
-
-            //Start Excel and get Application object.
-            oXL = new Excel.Application();
-            oXL.Visible = false;
-
-
-
-            // Daten einlesen
-
-            foreach (string lauf in files)
+            try
             {
-                bool added = false;
-                int rang = 0;
-                string nachname;
-                string vorname;
-                Rennfahrer rennfahrer;
-
-                int rCnt;
-                int cCnt;
-                int rw = 0;
-                int cl = 0;
-
-                int platzSpalte = 1;
-                int vornameSpalte = 4;
-                int nachnameSpalte = 3;
-
-                string[] words = lauf.Split('_');
-
-                string laufName = words[words.Length - 1].Split('.').First();
-                int laufNummer = Convert.ToInt16(words[words.Length - 2]);
-                klasse = words[words.Length - 3];
-                jahr = words[words.Length - 4].Split('\\').Last();
-
-                path = Path.GetDirectoryName(lauf);
 
 
-                label4.Text = "Jahresrangliste " + klasse + " " + jahr;
+                //Start Excel and get Application object.
+                oXL = new Excel.Application();
+                oXL.Visible = false;
 
-                läufe.Add(new Lauf(laufName, laufNummer));
-                /*try
-                {*/
 
-                //Get a the workbook.
-                oWB = oXL.Workbooks.Open(lauf, 0, true, 5, "", "", true, Microsoft.Office.Interop.Excel.XlPlatform.xlWindows, "\t", false, false, 0, true, 1, 0);
-                oSheet = (Excel.Worksheet)oWB.Worksheets.get_Item(1);
 
-                oRng = oSheet.UsedRange;
-                rw = oRng.Rows.Count;
-                cl = oRng.Columns.Count;
+                // Daten einlesen
 
-                for (cCnt = 1; cCnt <= cl; cCnt++)
+                foreach (string lauf in files)
                 {
-                    string header = (string)(oRng.Cells[1, cCnt] as Excel.Range).Value2;
-                    if (header == "Platz") platzSpalte = cCnt;
-                    if (header == "Nachname") nachnameSpalte = cCnt;
-                    if (header == "Vachname") vornameSpalte = cCnt;
-                }
+                    bool added = false;
+                    int rang = 0;
+                    string nachname;
+                    string vorname;
+                    Rennfahrer rennfahrer;
 
-                for (rCnt = 2; rCnt <= rw; rCnt++)
-                {
-                    added = false;
-                    if (Convert.ToInt16((oRng.Cells[rCnt, 1] as Excel.Range).Value2) != 0) rang = Convert.ToInt16((oRng.Cells[rCnt, 1] as Excel.Range).Value2); //Bei mehreren gleichen Rängen den Rang von vorher übernehmen
-                    nachname = (string)(oRng.Cells[rCnt, nachnameSpalte] as Excel.Range).Value2;
-                    vorname = (string)(oRng.Cells[rCnt, vornameSpalte] as Excel.Range).Value2;
+                    int rCnt;
+                    int cCnt;
+                    int rw = 0;
+                    int cl = 0;
 
-                    foreach (Rennfahrer r in jahresrangliste)
+                    int platzSpalte = 1;
+                    int vornameSpalte = 4;
+                    int nachnameSpalte = 3;
+
+                    string[] words = lauf.Split('_');
+
+                    string laufName = words[words.Length - 1].Split('.').First();
+                    int laufNummer = Convert.ToInt16(words[words.Length - 2]);
+                    klasse = words[words.Length - 3];
+                    jahr = words[words.Length - 4].Split('\\').Last();
+
+                    path = Path.GetDirectoryName(lauf);
+
+
+                    label4.Text = "Jahresrangliste " + klasse + " " + jahr;
+
+                    läufe.Add(new Lauf(laufName, laufNummer, 0));
+                    try
                     {
-                        if (r.nachname == nachname && r.vorname == vorname)
+
+                        //Get a the workbook.
+                        oWB = oXL.Workbooks.Open(lauf, 0, true, 5, "", "", true, Microsoft.Office.Interop.Excel.XlPlatform.xlWindows, "\t", false, false, 0, true, 1, 0);
+                        oSheet = (Excel.Worksheet)oWB.Worksheets.get_Item(1);
+
+                        oRng = oSheet.UsedRange;
+                        rw = oRng.Rows.Count;
+                        cl = oRng.Columns.Count;
+
+                        for (cCnt = 1; cCnt <= cl; cCnt++)
                         {
-                            r.Add(laufName, rangZuPunkte(rang));
-                            added = true;
-                            break;
+                            string header = (string)(oRng.Cells[1, cCnt] as Excel.Range).Value2;
+                            if (header == "Platz") platzSpalte = cCnt;
+                            if (header == "Nachname") nachnameSpalte = cCnt;
+                            if (header == "Vachname") vornameSpalte = cCnt;
                         }
-                    }
 
-                    if (added == false)
+                        for (rCnt = 2; rCnt <= rw; rCnt++)
+                        {
+                            added = false;
+                            if (Convert.ToInt16((oRng.Cells[rCnt, 1] as Excel.Range).Value2) != 0) rang = Convert.ToInt16((oRng.Cells[rCnt, 1] as Excel.Range).Value2); //Bei mehreren gleichen Rängen den Rang von vorher übernehmen
+                            nachname = (string)(oRng.Cells[rCnt, nachnameSpalte] as Excel.Range).Value2;
+                            vorname = (string)(oRng.Cells[rCnt, vornameSpalte] as Excel.Range).Value2;
+
+                            foreach (Rennfahrer r in jahresrangliste)
+                            {
+                                if (r.nachname == nachname && r.vorname == vorname)
+                                {
+                                    r.Add(laufName, laufNummer, rangZuPunkte(rang));
+                                    added = true;
+                                    break;
+                                }
+                            }
+
+                            if (added == false)
+                            {
+                                rennfahrer = new Rennfahrer(vorname, nachname, läufeZuGewerteteLäufe(files.Length));
+                                rennfahrer.Add(laufName, laufNummer, rangZuPunkte(rang));
+                                jahresrangliste.Add(rennfahrer);
+                            }
+
+                        }
+
+                        oWB.Close();
+                    }
+                    catch
                     {
-                        rennfahrer = new Rennfahrer(vorname, nachname, läufeZuGewerteteLäufe(files.Length));
-                        rennfahrer.Add(laufName, rangZuPunkte(rang));
-                        jahresrangliste.Add(rennfahrer);
-                    }
 
+                    }
                 }
 
-                oWB.Close();
-                /*}
-                catch
-                {
+                // Daten verarbeiten
+                jahresrangliste.Sort();
+                jahresrangliste.Reverse();
 
-                }*/
-            }
+                läufe.Sort();
 
-            // Daten verarbeiten
-            jahresrangliste.Sort();
-            jahresrangliste.Reverse();
+                // Daten ausgeben             
 
-            läufe.Sort();
-
-            // Daten ausgeben             
-
-            dataGridView1.ColumnCount = 4 + läufe.Count;
-            dataGridView1.Columns[0].Name = "Rang";
-            dataGridView1.Columns[1].Name = "Nachname";
-            dataGridView1.Columns[2].Name = "Vorname";
+                dataGridView1.ColumnCount = 4 + läufe.Count;
+                dataGridView1.Columns[0].Name = "Rang";
+                dataGridView1.Columns[1].Name = "Nachname";
+                dataGridView1.Columns[2].Name = "Vorname";
 
 
 
-            for (int i = 0; i < läufe.Count; i++)
-            {
-                dataGridView1.Columns[i + 3].Name = läufe[i].name;
-            }
-
-            dataGridView1.Columns[dataGridView1.ColumnCount - 1].Name = "Total";
-
-            foreach (Rennfahrer r in jahresrangliste)
-            {
-                List<string> row = new List<string> { (jahresrangliste.IndexOf(r) + 1).ToString(), r.nachname, r.vorname };
                 for (int i = 0; i < läufe.Count; i++)
                 {
-                    bool found = false;
-                    for (int n = 0; n < r.läufe.Count; n++)
-                    {
-                        if (r.läufe[n].name == läufe[i].name)
-                        {
-                            found = true;
-                            row.Add(r.läufe[n].punkte.ToString());
-                            break;
-                        }
-                    }
-                    if (found == false) row.Add(null);
+                    dataGridView1.Columns[i + 3].Name = läufe[i].name;
                 }
-                row.Add(r.getPoints().ToString());
-                dataGridView1.Rows.Add(row.ToArray<string>());
-            }
 
-            /*}
+                dataGridView1.Columns[dataGridView1.ColumnCount - 1].Name = "Total";
+
+                int rangNeu = 0;
+                int punkteVorangegangener = -1;
+                int anzahlGleiche = 1;
+                foreach (Rennfahrer r in jahresrangliste)
+                {
+                    if (punkteVorangegangener != r.getPoints())
+                    {
+                        rangNeu += anzahlGleiche; // 
+                        anzahlGleiche = 1;
+                    }
+                    else anzahlGleiche++;
+                    List<string> row = new List<string> { rangNeu.ToString(), r.nachname, r.vorname };
+                    for (int i = 0; i < läufe.Count; i++)
+                    {
+                        bool found = false;
+                        for (int n = 0; n < r.läufe.Count; n++)
+                        {
+                            if (r.läufe[n].name == läufe[i].name && r.läufe[n].nummer == läufe[i].nummer)
+                            {
+                                found = true;
+                                row.Add(r.läufe[n].punkte.ToString());
+                                break;
+                            }
+                        }
+                        if (found == false) row.Add(null);
+                    }
+                    row.Add(r.getPoints().ToString());
+                    punkteVorangegangener = r.getPoints();
+                    dataGridView1.Rows.Add(row.ToArray<string>());
+                }
+
+            }
             catch
             {
 
-            }*/
+            }
         }
 
 
         private void button1_Click(object sender, EventArgs e)
         {
+            //int columnWidth = 0;
+
             // Daten speichern
-            //try { 
-            // creating Excel Application  
-            Excel._Application app = new Microsoft.Office.Interop.Excel.Application();
-            // creating new WorkBook within Excel application  
-            Excel._Workbook workbook = app.Workbooks.Add(Type.Missing);
-            // creating new Excelsheet in workbook  
-            Excel._Worksheet worksheet = null;
-            // see the excel sheet behind the program  
-            app.Visible = false;
-            // get the reference of first sheet. By default its name is Sheet1.  
-            // store its reference to worksheet  
-            worksheet = workbook.Worksheets.get_Item(1);
-            worksheet = workbook.ActiveSheet;
-            // changing the name of active sheet  
-            worksheet.Name = "Jahresrangliste";
-            // storing title in Excel
-            worksheet.Range[worksheet.Cells[1, 1], worksheet.Cells[1, dataGridView1.Columns.Count]].Merge(false);
-            worksheet.Cells[1, 1] = label4.Text;
-            worksheet.Cells[1, 1].Font.Bold = true;
-            worksheet.Cells[1, 1].Font.Size = 20;
-            worksheet.Cells[1, 1].Style.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
-            worksheet.Cells[1, 1].Interior.Color = ColorTranslator.ToOle(Color.Gray);
-            worksheet.Range[worksheet.Cells[1, 1], worksheet.Cells[1, dataGridView1.Columns.Count]].BorderAround(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium, Excel.XlColorIndex.xlColorIndexAutomatic, Excel.XlColorIndex.xlColorIndexAutomatic);
-            // storing header part in Excel  
-            for (int i = 1; i < dataGridView1.Columns.Count + 1; i++)
-            {
-                if (i > 3 && i < dataGridView1.Columns.Count) worksheet.Cells[3, i] = "Lauf " + (i - 3).ToString();
-                worksheet.Cells[2, i].Font.Bold = true;
-                worksheet.Cells[2, i].Font.Size = 12;
-                worksheet.Cells[2, i].Interior.Color = ColorTranslator.ToOle(Color.LightGray);
-                worksheet.Cells[2, i].BorderAround(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium, Excel.XlColorIndex.xlColorIndexAutomatic, Excel.XlColorIndex.xlColorIndexAutomatic);
-
-
-
-                if (i > 3 && i < dataGridView1.Columns.Count) worksheet.Cells[2, i] = dataGridView1.Columns[i - 1].HeaderText;
-                else worksheet.Cells[3, i] = dataGridView1.Columns[i - 1].HeaderText;
-                worksheet.Cells[3, i].Font.Bold = true;
-                worksheet.Cells[3, i].Interior.Color = ColorTranslator.ToOle(Color.LightGray);
-                worksheet.Cells[3, i].BorderAround(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium, Excel.XlColorIndex.xlColorIndexAutomatic, Excel.XlColorIndex.xlColorIndexAutomatic);
-
-            }
-            // storing Each row and column value to excel sheet  
-            for (int i = 0; i < dataGridView1.Rows.Count; i++)
-            {
-                for (int j = 0; j < dataGridView1.Columns.Count; j++)
+            //try
+            //{
+                // creating Excel Application  
+                Excel._Application app = new Microsoft.Office.Interop.Excel.Application();
+                // creating new WorkBook within Excel application  
+                Excel._Workbook workbook = app.Workbooks.Add(Type.Missing);
+                // creating new Excelsheet in workbook  
+                Excel._Worksheet worksheet = null;
+                // see the excel sheet behind the program  
+                app.Visible = false;
+                // get the reference of first sheet. By default its name is Sheet1.  
+                // store its reference to worksheet  
+                worksheet = workbook.Worksheets.get_Item(1);
+                worksheet = workbook.ActiveSheet;
+                // Set Orientation to Landscape
+                worksheet.PageSetup.Orientation = Excel.XlPageOrientation.xlLandscape;
+                // changing the name of active sheet  
+                worksheet.Name = "Jahresrangliste";
+                // storing title in Excel
+                worksheet.Range[worksheet.Cells[1, 1], worksheet.Cells[1, dataGridView1.Columns.Count]].Merge(false);
+                worksheet.Cells[1, 1] = label4.Text;
+                worksheet.Cells[1, 1].Font.Bold = true;
+                worksheet.Cells[1, 1].Font.Size = 20;
+                worksheet.Cells[1, 1].HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                worksheet.Cells[1, 1].Interior.Color = ColorTranslator.ToOle(Color.Gray);
+                worksheet.Range[worksheet.Cells[1, 1], worksheet.Cells[1, dataGridView1.Columns.Count]].BorderAround(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium, Excel.XlColorIndex.xlColorIndexAutomatic, Excel.XlColorIndex.xlColorIndexAutomatic);
+                // storing header part in Excel  
+                for (int i = 1; i < dataGridView1.Columns.Count + 1; i++)
                 {
-                    try
-                    {
-                        worksheet.Cells[i + 4, j + 1] = dataGridView1.Rows[i].Cells[j].Value.ToString();
-                    }
-                    catch //Fängt Ausnahmen ab wenn Zellen leer sind
-                    {
+                    if (i > 3 && i < dataGridView1.Columns.Count) worksheet.Cells[3, i] = "Lauf " + (i - 3).ToString();
+                    worksheet.Cells[2, i].Font.Bold = true;
+                    worksheet.Cells[2, i].Font.Size = 12;
+                    worksheet.Cells[2, i].Interior.Color = ColorTranslator.ToOle(Color.LightGray);
+                    worksheet.Cells[2, i].BorderAround(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium, Excel.XlColorIndex.xlColorIndexAutomatic, Excel.XlColorIndex.xlColorIndexAutomatic);
 
-                    }
-                    worksheet.Cells[i + 4, j + 1].BorderAround(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium, Excel.XlColorIndex.xlColorIndexAutomatic, Excel.XlColorIndex.xlColorIndexAutomatic);
+
+
+                    if (i > 3 && i < dataGridView1.Columns.Count) worksheet.Cells[2, i] = dataGridView1.Columns[i - 1].HeaderText;
+                    else worksheet.Cells[3, i] = dataGridView1.Columns[i - 1].HeaderText;
+                    worksheet.Cells[3, i].Font.Bold = true;
+                    worksheet.Cells[3, i].Interior.Color = ColorTranslator.ToOle(Color.LightGray);
+                    worksheet.Cells[3, i].BorderAround(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium, Excel.XlColorIndex.xlColorIndexAutomatic, Excel.XlColorIndex.xlColorIndexAutomatic);
+
                 }
-            }
-            worksheet.Range[worksheet.Cells[dataGridView1.Rows.Count + 4, 1], worksheet.Cells[dataGridView1.Rows.Count + 4, dataGridView1.Columns.Count]].Merge(false);
-            worksheet.Cells[dataGridView1.Rows.Count + 4, 1] = DateTime.Today.ToString("s");
+                // storing Each row and column value to excel sheet  
+                for (int i = 0; i < dataGridView1.Rows.Count; i++)
+                {
+                    for (int j = 0; j < dataGridView1.Columns.Count; j++)
+                    {
+                        try
+                        {
+                            worksheet.Cells[i + 4, j + 1] = dataGridView1.Rows[i].Cells[j].Value.ToString();
+                        }
+                        catch //Fängt Ausnahmen ab wenn Zellen leer sind
+                        {
+
+                        }
+                    worksheet.Cells[i + 4, j + 1].BorderAround(Excel.XlLineStyle.xlContinuous, Excel.XlBorderWeight.xlMedium, Excel.XlColorIndex.xlColorIndexAutomatic, Excel.XlColorIndex.xlColorIndexAutomatic);
+                    }
+                }
+                worksheet.Range[worksheet.Cells[dataGridView1.Rows.Count + 4, 1], worksheet.Cells[dataGridView1.Rows.Count + 4, dataGridView1.Columns.Count]].Merge(false);
+                worksheet.Cells[dataGridView1.Rows.Count + 4, 1] = DateTime.Today.ToString("d");
+                worksheet.Cells[dataGridView1.Rows.Count + 4, 1].HorizontalAlignment = Excel.XlHAlign.xlHAlignRight;
+
+            // Set column width
             worksheet.UsedRange.Columns.AutoFit();
+            //    for(int j = 1; j < dataGridView1.Columns.Count; j++)
+            //    {
+            //        if(columnWidth < worksheet.Cells[3,j].width) columnWidth = (int)worksheet.Cells[3, j].width;
+            //    }
+
+            //worksheet.UsedRange.ColumnWidth = 15;
 
             // save the application  
             workbook.SaveAs(path + "\\" + jahr + "_" + klasse + "_0_Jahresrangliste" + ".xlsx", Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Microsoft.Office.Interop.Excel.XlSaveAsAccessMode.xlExclusive, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
 
 
-            // export PDF
-            worksheet.ExportAsFixedFormat(Excel.XlFixedFormatType.xlTypePDF, path + "\\" + jahr + "_" + klasse + "_0_Jahresrangliste" + ".pdf");
+                // export PDF
+                worksheet.ExportAsFixedFormat(Excel.XlFixedFormatType.xlTypePDF, path + "\\" + jahr + "_" + klasse + "_0_Jahresrangliste" + ".pdf");
 
-            // Exit from the application  
-            app.Quit();
+                // Exit from the application  
+                app.Quit();
 
-            /*
-            catch
-            {
-            }
-            */
+            //}
+            //catch
+            //{
+            //}
+
 
         }
     }
@@ -301,7 +323,7 @@ namespace Jahresauswertung
         public string nachname;
         public List<Lauf> läufe;
 
-        public Rennfahrer(string vorname,string nachname,int anzahlGewerteteLäufe)
+        public Rennfahrer(string vorname, string nachname, int anzahlGewerteteLäufe)
         {
             this.anzahlGewerteteLäufe = anzahlGewerteteLäufe;
             this.vorname = vorname;
@@ -336,9 +358,9 @@ namespace Jahresauswertung
             return res;
         }
 
-        public void Add(string name, int punkte)
+        public void Add(string name, int nummer, int punkte)
         {
-            this.läufe.Add(new Lauf(name, punkte));
+            this.läufe.Add(new Lauf(name, nummer, punkte));
             läufe.Sort();
             läufe.Reverse();
         }
@@ -351,7 +373,7 @@ namespace Jahresauswertung
         {
             int sum = 0;
             if (anzahlGewerteteLäufe > this.läufe.Count) anzahlGewerteteLäufe = this.läufe.Count;
-            for(int i=0;i < anzahlGewerteteLäufe; i++)
+            for (int i = 0; i < anzahlGewerteteLäufe; i++)
             {
                 sum += läufe[i].punkte;
             }
@@ -362,11 +384,13 @@ namespace Jahresauswertung
     public class Lauf : IComparable
     {
         public string name;
+        public int nummer;
         public int punkte;
 
-        public Lauf(string name, int punkte)
+        public Lauf(string name, int nummer, int punkte)
         {
             this.name = name;
+            this.nummer = nummer;
             this.punkte = punkte;
         }
 
