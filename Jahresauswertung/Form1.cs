@@ -224,8 +224,8 @@ namespace Jahresauswertung
             //int columnWidth = 0;
 
             // Daten speichern
-            //try
-            //{
+            try
+            {
                 // creating Excel Application  
                 Excel._Application app = new Microsoft.Office.Interop.Excel.Application();
                 // creating new WorkBook within Excel application  
@@ -307,10 +307,10 @@ namespace Jahresauswertung
                 // Exit from the application  
                 app.Quit();
 
-            //}
-            //catch
-            //{
-            //}
+            }
+            catch
+            {
+            }
 
 
         }
